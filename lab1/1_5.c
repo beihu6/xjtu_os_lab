@@ -12,6 +12,7 @@ int main(){
 	}
 	else if(pid==0){
 		printf("child:pid=%d\n",getpid());/*A*/
+		fflush(stdout);
 		if(execl("/root/code_field/c_code/oslab/lab1/test","test",NULL)==-1){
 			printf("execl failed\n");
 		}
