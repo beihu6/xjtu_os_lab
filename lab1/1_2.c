@@ -18,6 +18,8 @@ int main(){
 		printf("child:original value=%d\n",value);
 		value=getpid();
 		printf("child:updated value=%d\n",value);
+		//打印value地址
+		printf("child:value address=%p\n",&value);	
 	}
 
 	else{
@@ -25,6 +27,8 @@ int main(){
 		printf("father:original value=%d\n",value);
 		value=getpid();
 		printf("father:updated value=%d\n",value);
+		//打印value地址
+		printf("father:value address=%p\n",&value);
 		wait(NULL);
 	}
 	return 0;

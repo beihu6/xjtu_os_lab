@@ -14,11 +14,15 @@ int main(){
 		pid1 = getpid();
 		printf("child:pid=%d\n",pid);/*A*/
 		printf("child:pid1=%d\n",pid1);/*B*/
+		printf("before father process ends,child:ppid=%d\n",getppid());
+		sleep(3);
+		printf("after father process ends,child:ppid=%d\n",getppid());
 	}
 	else{
 		pid1=getpid();
 		printf("parent:pid=%d\n",pid);/*C*/
 		printf("parent:pid1=%d\n",pid1);/*D*/
+		sleep(1);
 	}
 	return 0;
 }

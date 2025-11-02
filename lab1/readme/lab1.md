@@ -22,6 +22,12 @@
 
 原因在于wait会阻塞父进程的执行知道子进程执行完成。去除之后，父子进程并发执行，打印顺序将不确定，并会出现僵尸进程。
 
+可以将父进程先结束，打印子进程的ppid实验如下
+
+![Untitled](./picture/new1.png)
+
+可以看到，父进程结束后，子进程的ppid变成了1，即init进程。由init进程接管。
+
 步骤三： 修改图 1-1 中代码，增加一个全局变量并在父子进程中对其进行不同的操作，观察并解释所做操作和输出结果。
 
 ```c
@@ -64,6 +70,56 @@ int main(){
 ![Untitled](./picture/step1-3.png)
 
 父进程与子进程先后交替运行，是合理的。并且通过分析，父子进程的value各自拥有一个独立的副本，每个进程对value的修改是独立的。
+
+在程序中打印value的地址
+
+```c
+#include<sys/wait.h>
+#include<sys/types.h>
+#include<stdio.h>
+#include<unistd.h>
+
+int value=0;
+int main(){
+	pid_t pid,pid1;
+	/*fork a child process*/
+	pid = fork();
+	if(pid<0){
+		fprintf(stderr,"Fork Failed");
+		return 1;
+	}
+	else if(pid==0){
+		printf("child:pid=%d\n",getpid());
+		sleep(2);
+		printf("child:original value=%d\n",value);
+		value=getpid();
+		printf("child:updated value=%d\n",value);
+		//打印value地址
+		printf("child:value address=%p\n",&value);	
+	}
+
+	else{
+		printf("father:pid=%d\n",getpid());
+		printf("father:original value=%d\n",value);
+		value=getpid();
+		printf("father:updated value=%d\n",value);
+		//打印value地址
+		printf("father:value address=%p\n",&value);
+		wait(NULL);
+	}
+	return 0;
+}
+```
+
+运行结果
+
+![Untitled](./picture/new2.png)
+
+从这个结果，可以更好的理解操作系统的内存机制。
+第一，每次运行时，父子进程的value地址是相同的，这是因为在fork时，父子进程共享页表，因此地址是一样的,value的独立副本是它们采取写时复制机制，当需要对某个地址空间的值做修改时，会使该页表指向新的物理帧。
+
+第二，每次运行value的虚拟地址空间都是不变的，这是因为代码在编译链接阶段就已经确定好了变量的虚拟地址。
+
 
 步骤四： 在步骤三基础上，在 return 前增加对全局变量的操作（自行设计）并输出结果，观察并解释所做操作和输出结果
 
@@ -216,12 +272,6 @@ int main(){
 2. **编程技巧提升**：这个实验让我更熟悉了 C 语言的编程模式，尤其是涉及到系统级调用和进程管理的函数。对 **`fork()`**, **`wait()`**, **`system()`**, 和 **`exec()`** 等函数有了更深入的了解。
 3. **系统调用与命令行工具**：实验中涉及到 **`system()`** 和 **`exec()`** 系列函数，使我了解了如何在程序中执行系统命令，以及如何用 **`exec()`** 替换当前进程的执行内容。
 4. **多进程编程模型**：通过在一个程序中创建多个进程，以及管理这些进程的行为和状态，我对多进程编程有了更实际的认识和理解。
-
-### 1.1.2.3 意见与建议
-
-1. **增加更多的进程管理实验**：当前实验内容虽然涵盖了基础的进程创建和管理，但在实际应用中还有更多高级的用法，比如多进程并发处理，进程通信等，建议加入这部分内容。
-2. **提供更详细的函数文档和示例代码**：尽管实验手册给出了基础框架，但更多具体函数的使用例子和文档将会更有助于理解。
-3. **加强对错误处理的教学**：在实际编程中，错误处理是非常重要的一环。本次实验虽然有简单的错误处理，但没有详细介绍这方面的最佳实践。
 
 # 1.2 线程相关编程实验
 
