@@ -307,24 +307,11 @@ void mem_comp(){
         ab=ab->next;
     }
 
-    //重新建立空闲区链表
-    rearrange_FF();
-    struct free_block_type *fbt,*pre;
-    fbt=free_block;
-    if(fbt==NULL){
-        fbt=(struct free_block_type*) malloc(sizeof(struct free_block_type));
-        if(!fbt) return;
-        fbt->start_addr=total_size;
-        fbt->size=mem_size - total_size;
-        fbt->next=NULL;
-        free_block=fbt;
-    }
-    else{
-        delete_free_list();
-        free_block->start_addr=total_size;
-        free_block->size=mem_size - total_size;
-        free_block->next=NULL;
-    }
+    delete_free_list();
+    free_block=(struct free_block_type*) malloc(sizeof(struct free_block_type));
+    free_block->start_addr=total_size;
+    free_block->size=mem_size - total_size;
+    free_block->next=NULL;
 }
 
 /*分配内存模块*/
@@ -352,6 +339,7 @@ int allocate_mem(struct allocated_block *ab){
                 }else{
                     pre->next = fbt->next;
                 }
+                ab->size = fbt->size;
                 free(fbt);
             }
             rearrange(ma_algorithm);
@@ -443,7 +431,6 @@ int dispose(struct allocated_block *free_ab){
 int display_mem_usage(){
     struct free_block_type *fbt=free_block;
     struct allocated_block *ab=allocated_block_head;
-    if(fbt==NULL) return(-1);
     printf("----------------------------------------------------------\n");
     /* 显示空闲区 */
     printf("Free Memory:\n");
