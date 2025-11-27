@@ -1,0 +1,1 @@
+admin admin disk1.img
